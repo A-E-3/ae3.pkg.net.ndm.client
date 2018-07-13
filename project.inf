@@ -1,0 +1,7 @@
+Name: ae3.pkg.net.ndm.client
+Title: NDM NDSS Client 
+Requires: 
+Suggests: 
+Declares: 
+Provides: ndm.client
+Replaces: 
