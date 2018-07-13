@@ -1,0 +1,6 @@
+{
+	type : "ae3.Package",
+	name : "ndm.client",
+	description : "NDM NDSS Client",
+	version : "1.0",
+}
