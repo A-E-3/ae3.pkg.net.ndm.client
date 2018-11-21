@@ -39,19 +39,16 @@ const f = {
 };
 
 function UdpCloudClient(client, key, secret, serial){
+	this.RemoteServicePrincipal(key, undefined, secret, serial);
 	Object.defineProperties(this, {
 		client : {
 			value : client
 		},
 		targetSpec : {
 			value : 'udp.' + client.ndssHost + ':4044'
-		},
-		handlers : {
-			value : {}
 		}
 	});
 	this.registerHandler(this.iface.MsgCall, f.handlerCall.bind(this.iface, this));
-	this.RemoteServicePrincipal(key, undefined, secret, serial);
 	return this;
 }
 
