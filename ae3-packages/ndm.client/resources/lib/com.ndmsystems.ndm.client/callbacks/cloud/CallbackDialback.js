@@ -33,8 +33,9 @@ const CallbackDialback = module.exports = ae3.Class.create(
 				}
 				switch(reply.code){
 				case 101: {
-					console.log("ndm.client:callback:dialback: switch protocol, reply: %s", Format.jsDescribe(reply));
+					console.log("ndm.client:callback:dialback: switch protocol, reply: %s, %s", Format.jsDescribe(reply), this.socket);
 					this.server = new ae3.web.HttpServerParser(this.socket, this.requestCallback.bind(this), (this.tunnelType % 1000) === 443, {});
+					console.log("ndm.client:callback:dialback: http server connected, %s", this.server);
 					return;
 				}
 				}
