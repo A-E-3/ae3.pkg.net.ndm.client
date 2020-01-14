@@ -15,13 +15,7 @@ const vfs = ae3.vfs;
 const ClientRequest = require('./ClientRequest');
 
 
-var reg = /\D/g;
-
-const f = {
-	validateTagFormat : function(licenseNumber){
-		return licenseNumber.replace(reg, "").length === 15;
-	}
-};
+const DIGITS_ONLY_REGEXP = /\D/g;
 
 /**
  * NDMC constructor
@@ -241,7 +235,9 @@ Object.defineProperties(Client.prototype, {
 		value : require('./UdpCloudClient')
 	},
 	validateTagFormat : {
-		value : f.validateTagFormat
+		value : function validateTagFormat(licenseNumber){
+			return licenseNumber.replace(DIGITS_ONLY_REGEXP, "").length === 15;
+		}
 	},
 	next : {
 		value : function(console){
@@ -325,14 +321,20 @@ Object.defineProperties(Client.prototype, {
 			return true;
 		}
 	},
+	ndssUrl : {
+		get : function buildNdssUrl(){
+			var port = Number(this.ndssPort);
+			return ((port == 80 || port == 8080 || port == 17080) ? "http://" : "https://") + this.ndssHost + ':' + (port || 443);
+		}
+	},
 	ndmpKeyPair :{
 		value : function(force){
 			//  try use existing, if any
 			if(!force){
-				const ndmpKeyPublic = this.vfs.getContentAsBinary("ndmpKeyPublic");
-				// const ndmpKeyPublic = this.vfs.relativeBinary("ndmpKeyPublic");
-				const ndmpKeyPrivate = this.vfs.getContentAsBinary("ndmpKeyPrivate");
-				// const ndmpKeyPrivate = this.vfs.relativeBinary("ndmpKeyPrivate");
+				// const ndmpKeyPublic = this.vfs.getContentAsBinary("ndmpKeyPublic");
+				const ndmpKeyPublic = this.vfs.relativeBinary("ndmpKeyPublic");
+				// const ndmpKeyPrivate = this.vfs.getContentAsBinary("ndmpKeyPrivate");
+				const ndmpKeyPrivate = this.vfs.relativeBinary("ndmpKeyPrivate");
 				if(ndmpKeyPublic && ndmpKeyPrivate){
 					console.log("ndm.client: ndmp: using existing EC pair");
 
@@ -403,6 +405,16 @@ Object.defineProperties(Client.prototype, {
 			return "https://" + this.ndmpZone + "/#link:" + Format.binaryAsBase58(collector.toBinary());
 		}
 	},
+	ndmpInvalidateLink : {
+		value : function(force){
+			if(!force){
+				return false;
+			}
+			this.vfs.setContentUndefined("ndmpKeyPublic");
+			this.vfs.setContentUndefined("ndmpKeyPrivate");
+			return true;
+		}
+	},
 	toString : {
 		value : function(){
 			return "[NdmcClient " + Format.jsString(this.licenseNumber) + "/" + Format.jsString(this.clientId)+"]";
@@ -455,7 +467,9 @@ Object.defineProperties(Client.prototype, {
 
 Object.defineProperties(Client, {
 	validateTagFormat : {
-		value : f.validateTagFormat
+		value : function validateTagFormat(licenseNumber){
+			return licenseNumber.replace(DIGITS_ONLY_REGEXP, "").length === 15;
+		}
 	},
 	storeRaw : {
 		value : function(vfsClient, clientId, ndssHost, ndssPort, licenseNumber, serviceKey){

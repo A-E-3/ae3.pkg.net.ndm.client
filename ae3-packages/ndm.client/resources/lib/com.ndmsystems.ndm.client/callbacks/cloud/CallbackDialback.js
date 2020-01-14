@@ -71,11 +71,15 @@ const CallbackDialback = module.exports = ae3.Class.create(
 		if(!this.sessionToken){
 			return null;
 		}
+		this.clientAddress = args[9];
 		return this;
 	},
 	{
 		"requestCallback" : {
 			value : function(query){
+				if(query && this.clientAddress) {
+					query = query.addAttribute('X-Forwarded-For', this.clientAddress);
+				} 
 				console.log("ndm.client:callback:dialback: web request: %s", Format.jsDescribe(query));
 				return ae3.web.WebInterface.dispatch(query);
 			}
@@ -102,7 +106,11 @@ const CallbackDialback = module.exports = ae3.Class.create(
 							this.socket, //
 							this.requestCallback.bind(this), //
 							(this.tunnelType % 100) === 43 || (this.tunnelType % 100) === 83, //
-							{} //
+							{
+								factory : 'HTTP',
+								ignoreTargetPort : true,
+								reverseProxied : true
+							} //
 					);
 					console.log("ndm.client:callback:dialback: http server connected, %s", this.server);
 					return;
