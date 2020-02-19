@@ -129,15 +129,11 @@ var commands = {
 	},
 	"ndmp/link" : {
 		/* ndm.client ndmp/link default ndss.local */
-		args : "<clientAlias> <webShareName> [--force-new]",
+		args : "<clientAlias> [--force-new]",
 		help : "Creates a link with NDMP service",
 		run : function(args) {
 			const clientId = args.shift();
 			if(!clientId){
-				return console.fail("Not enough arguments!");
-			}
-			const webShareName = args.shift();
-			if(!webShareName){
 				return console.fail("Not enough arguments!");
 			}
 			const forceNew = args.shift();
@@ -150,7 +146,7 @@ var commands = {
 				return console.fail("Client is unknown: " + clientId);
 			}
 
-			const link = client.ndmpPrepareValidationLink(webShareName, forceNew);
+			const link = client.components.ndmp.prepareMatingLink(forceNew);
 			if(link){
 				console.log("ndmp link url is: " + link);
 				return true;
@@ -173,7 +169,7 @@ var commands = {
 			const NdmCloudService = require('./NdmCloudService');
 			if(clientId === '--all'){
 				for(let client of NdmCloudService.getClients()){
-					if(!client.ndmpInvalidateLink(true)){
+					if(!client.components.ndmp.invalidateMatingKeys(true)){
 						return console.fail("ndmp unlink is not available!, client: %s", Format.jsObjectReadable(client));
 					}
 					console.sendMessage("client: " + client.clientId + ", ndmp link data clean");
@@ -186,11 +182,36 @@ var commands = {
 				return console.fail("Client is unknown: " + clientId);
 			}
 
-			const result = client.ndmpInvalidateLink(true);
+			const result = client.components.ndmp.invalidateMatingKeys(true);
 			if(result){
 				return true;
 			}
 			return console.fail("ndmp unlink is not available!");
+		}
+	},
+	"ndmp/status" : {
+		/* ndm.client ndmp/status default */
+		args : "<clientAlias>",
+		help : "Displays NDMP mating status",
+		run : function(args) {
+			const clientId = args.shift();
+			if(!clientId){
+				return console.fail("Not enough arguments!");
+			}
+			const NdmCloudService = require('./NdmCloudService');
+			const client = NdmCloudService.getClient(clientId);
+			if(!client){
+				return console.fail("Client is unknown: " + clientId);
+			}
+
+			const keys = client.components.ndmp.confirmedMatingKeys;
+			if(keys){
+				const Secp256r1 = require('ae3').net.ssl.EllipticCurveSecp256r1;
+				console.log("ndmp mating client key: %s", Secp256r1.formatPublicKeyAsHexCompressed(keys.client));
+				console.log("ndmp mating server key: %s", Secp256r1.formatPublicKeyAsHexCompressed(keys.server));
+				return true;
+			}
+			return console.fail("ndmp service is not linked!");
 		}
 	},
 	"ndns/update" : {
