@@ -3,5 +3,8 @@ Title: NDM NDSS Client
 Requires: 
 Suggests: 
 Declares: 
-Provides: ndm.client
+Provides: \
+	ndm.client \
+	source-process:ae3-packages \
+	
 Replaces: 
