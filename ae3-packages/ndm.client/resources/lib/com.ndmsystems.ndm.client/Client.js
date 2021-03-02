@@ -43,6 +43,7 @@ const Client = module.exports = ae3.Class.create(
 				value : {
 					"base"  : require("./components/base/ComponentBase").newInstance(this),
 					"cloud" : require("./components/cloud/ComponentCloud").newInstance(this),
+					"ndns"  : require("./components/ndns/ComponentNdns").newInstance(this),
 					"ndmp"  : require("./components/ndmp/ComponentNdmp").newInstance(this),
 				}
 			}
@@ -216,11 +217,6 @@ const Client = module.exports = ae3.Class.create(
 				}finally{
 					txn && txn.commit();
 				}
-			}
-		},
-		createEpoch2ClientRequest : {
-			value : function(ndssHost, ndssPort, licenseNumber){
-				return new ClientRequest(new Epoch2Client(ndssHost, ndssPort, licenseNumber));
 			}
 		},
 		createRobotClientRequest : {
@@ -467,22 +463,6 @@ const DeviceClient = ae3.Class.create(
 			},
 			post : {
 				pw : serviceKey
-			}
-		};
-		return this;
-	}
-);
-
-
-const Epoch2Client = ae3.Class.create(
-	"Epoch2Client",
-	undefined,
-	function(ndssHost, ndssPort, licenseNumber){
-		this.ndssHost = ndssHost;
-		this.ndssPort = ndssPort;
-		this.auth = {
-			get : {
-				license : licenseNumber
 			}
 		};
 		return this;
