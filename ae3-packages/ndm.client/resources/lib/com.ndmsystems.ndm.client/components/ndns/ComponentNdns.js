@@ -12,7 +12,7 @@ const ComponentNdns = module.exports = ae3.Class.create(
 			value : "ndns"
 		},
 		acceptXmlNotifications : {
-			value : ['ub1','ut1']
+			value : ['ubA','ut1']
 		},
 		
 		requestXmlNotifications : {

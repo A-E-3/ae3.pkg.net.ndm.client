@@ -12,7 +12,7 @@ const ComponentCloud = module.exports = ae3.Class.create(
 			value : "cloud"
 		},
 		acceptXmlNotifications : {
-			value : ['ub1','ut1']
+			value : ['ubA','ut1']
 		},
 		
 		requestXmlNotifications : {
