@@ -1,5 +1,5 @@
 const ae3 = require("ae3");
-const Secp256r1 = ae3.net.ssl.EllipticCurveSecp256r1;
+const Secp256r1 = ae3.crypto.EllipticCurveSecp256r1;
 
 const ComponentNdmp = module.exports = ae3.Class.create(
 	"ComponentNdmp",
@@ -214,7 +214,7 @@ const ComponentNdmp = module.exports = ae3.Class.create(
 					},
 					"ndmpSvcPublic" : {
 						index : true,
-						value : ae3.Transfer.createCopier(Secp256r1.formatPublicKeyAsBytesCompressed(servicePublic)))
+						value : ae3.Transfer.createCopier(Secp256r1.formatPublicKeyAsBytesCompressed(servicePublic))
 					}
 				});
 
