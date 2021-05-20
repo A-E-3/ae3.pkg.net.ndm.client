@@ -43,8 +43,8 @@ const Client = module.exports = ae3.Class.create(
 				value : {
 					"base"  : require("./components/base/ComponentBase").newInstance(this),
 					"cloud" : require("./components/cloud/ComponentCloud").newInstance(this),
-					"ndns"  : require("./components/ndns/ComponentNdns").newInstance(this),
 					"ndmp"  : require("./components/ndmp/ComponentNdmp").newInstance(this),
+					"ndns"  : require("./components/ndns/ComponentNdns").newInstance(this),
 				}
 			}
 		});
@@ -323,7 +323,7 @@ function internAppendRegister(clientRequest, reason){
 			sn			: ___ECMA_IMPL_HOST_NAME___,
 			v			: 2,
 			address		: ae3.net.localAddress,
-			xns			: ['ubA', 'ut1']
+			xns			: ['ubA', 'ut1', 'cc1']
 		},
 		onSuccess	: (function(map){
 			// const address = map.address;
