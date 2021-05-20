@@ -14,7 +14,7 @@ const HandlerRrst = module.exports = function(message, address, serial){
 		return;
 	}
 	
-	console.log(">>>>>> ndm.client:UdpCloudService::handlerRrst(%s, %s) => RSST, %s", this, message, rrst);
+	console.log(">>>>>> ndm.client:UdpCloudService::handlerRrst(%s, %s) => RSST, request", this, message);
 	this.sendSingle(new UdpCloudService.MsgCerr(serial, 0x01 /* No Such Component */), address);
 	return;
 
