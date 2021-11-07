@@ -8,12 +8,6 @@ const Client = require('./Client');
  */
 let stopped = true;
 
-
-/**
- * Client descriptors location
- */
-const SETTINGS_PATH = "settings/ndm.ndss-client";
-
 /**
  * Client persistent state data location
  */
@@ -41,7 +35,7 @@ const f = {
 		});
 
 		const clients = ae3.Util.Settings.SettingsBuilder.builderSimple()//
-			.setInputFolderPath(SETTINGS_PATH)//
+			.setInputFolderPath("settings/ndm.ndss-client")//
 			.setDescriptorReducer(function(settings, description){
 				if (description.type !== "ndm.client/Connection") {
 					return settings;
