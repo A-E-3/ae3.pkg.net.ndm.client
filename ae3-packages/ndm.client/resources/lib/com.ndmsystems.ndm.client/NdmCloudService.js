@@ -40,12 +40,12 @@ const f = {
 				if (description.type !== "ndm.client/Connection") {
 					return settings;
 				}
-				var name = description.name;
+				const name = description.name;
 				if(!name){
 					throw "Client 'name' is expected!";
 				}
-				var service = description.service;
-				var file = clientsFolder.relativeFolder(name);
+				const service = description.service;
+				const file = clientsFolder.relativeFolder(name);
 				settings[name] = new Client(file, service.host, service.port, service.key, service.pass);
 				return settings;
 			})//
