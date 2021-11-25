@@ -121,7 +121,7 @@ function internClientDoRequest(future, items, then){
 			
 			const callback = internCallbackHttpSimple.bind(this, future, request, then);
 
-			console.log("ndmc %s: single request: //%s:%s/%s", this, url.host, url.port, url.path);
+			console.log("ndmc %s: single request: //%s:%s%s", this, url.host, url.port, url.path);
 			
 			Object.keys(post).length 
 				? http.post(url, post, callback)
