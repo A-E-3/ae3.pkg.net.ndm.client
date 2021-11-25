@@ -1,2 +1,6 @@
 /FirmwareVersionComparator.class
 /SoftwareVersionComparator.class
+/LicenseObject.class
+/LicenseStatic.class
+/NdmLicenseObject.class
+/NdmLicenseStatic.class

@@ -18,6 +18,15 @@ const ClientRequest = require('./ClientRequest');
 const DIGITS_ONLY_REGEXP = /\D/g;
 
 
+const NATIVE_IMPL = (function(){
+	try{
+		return require("java.class/com.ndmsystems.ndmc.NdmLicenseStatic");
+	}catch(e){
+		return {};
+	}
+})();
+
+
 const Client = module.exports = ae3.Class.create(
 	"Client",
 	undefined,
@@ -70,7 +79,7 @@ const Client = module.exports = ae3.Class.create(
 			value : require('./UdpCloudClient')
 		},
 		validateTagFormat : {
-			value : function(licenseNumber){
+			value : NATIVE_IMPL.validateLicenseFormat || function(licenseNumber){
 				return licenseNumber.replace(DIGITS_ONLY_REGEXP, "").length === 15;
 			}
 		},
@@ -172,11 +181,13 @@ const Client = module.exports = ae3.Class.create(
 				return this.serviceKey
 					?	{
 						get : {
-							__auth_type : "ndss3",
+							__auth_type : "e4",
 							license : this.licenseNumber
 						},
+						headers : {
+							"Authorization" : "NDSS4 " + ae3.Transfer.createCopierUtf8(this.serviceKey).toStringBase64()
+						},
 						post : {
-							pw : this.serviceKey
 						}
 					}
 					:	{
@@ -458,11 +469,13 @@ const DeviceClient = ae3.Class.create(
 		this.ndssPort = ndssPort;
 		this.auth = {
 			get : {
-				__auth_type : "ndss3",
+				__auth_type : "e4",
 				license : licenseNumber
 			},
+			headers : {
+				"Authorization" : "NDSS4 " + ae3.Transfer.createCopierUtf8(serviceKey).toStringBase64()
+			},
 			post : {
-				pw : serviceKey
 			}
 		};
 		return this;

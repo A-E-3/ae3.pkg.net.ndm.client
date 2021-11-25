@@ -2,5 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ae3.api"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
