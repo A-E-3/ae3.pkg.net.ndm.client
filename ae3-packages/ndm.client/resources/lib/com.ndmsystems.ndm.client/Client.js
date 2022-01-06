@@ -57,6 +57,21 @@ const Client = module.exports = ae3.Class.create(
 				}
 			}
 		});
+		
+		
+		Object.defineProperties(this, {
+			notificationHandlers : {
+				value : Object.values(this.components).reduce(function(previousValue, currentValue){
+					if(currentValue){
+						for(let xns of (currentValue.acceptXmlNotifications || [])){
+							(previousValue[xns] || (previousValue[xns] = [])).push(currentValue);
+						}
+					}
+					return previousValue;
+				}, {})
+			}
+		});
+		
 
 		this.ndssHost		= ndssHost || folder.getContentAsText("ndssHost", '');
 		this.ndssPort		= ndssPort || folder.getContentAsText("ndssPort", '');
@@ -169,6 +184,61 @@ const Client = module.exports = ae3.Class.create(
 			get : function(){
 				const port = Number(this.ndssPort);
 				return ((port == 80 || port == 8080 || port == 17080) ? "http://" : "https://") + this.ndssHost + ':' + (port || 443);
+			}
+		},
+		onUpdateTokenXns : {
+			value : function(id, n){
+				this.ndnsAlias = Format.hexAsBinary(n.alias);
+				this.ndnsSecret = Format.hexAsBinary(n.secret);
+				this.ndnsSettings = n.settings;
+				id = this.ndmpHost;
+				if(n.alias && n.settings && n.settings.domain){
+					this.ndmpZone = n.settings.domain;
+					this.ndmpHost = n.alias.substring(0, 24) + '.' + this.ndmpZone;
+					console.log("ndm.client '%s': 'ut1' notification handler, system name: %s", this.clientId, this.ndmpHost);
+				}
+				if(id !== this.ndmpHost){
+					if(this.ndmpHost){
+						this.vfs.setContentPublicTreePrimitive("ndmpHost", this.ndmpHost);
+						ae3.web.WebInterface.localNameUpsert(this.ndmpHost, "ndmc-ndmp-" + this.clientId);
+					}else{
+						this.vfs.setContentUndefined("ndmpHost");
+						ae3.web.WebInterface.localNameRemove(id, "ndmc-ddns-" + this.clientId);
+					}
+				}
+				const uClient = this.udpCloudClient;
+				if(uClient){
+					if(uClient.secret != this.ndnsSecret){
+						uClient.destroy();
+						(this.udpCloudClient = new this.UdpCloudClient(this, this.ndnsAlias.slice(0, 12), this.ndnsSecret, 0)).start();
+					}
+				}else{
+					(this.udpCloudClient = new this.UdpCloudClient(this, this.ndnsAlias.slice(0, 12), this.ndnsSecret, 0)).start();
+				}
+			}
+		},
+		onUpdateBookingXns : {
+			value : function(id, n){
+				this.ddnsName = n.name;
+				this.ddnsZone = n.domain;
+				this.ddnsAddr = n.address;
+				id = this.ddnsHost;
+				if(this.ddnsName && this.ddnsZone){
+					this.ddnsHost = this.ddnsName + '.' + this.ddnsZone;
+					ae3.web.WebInterface.localNameUpsert(this.ddnsHost, "ndmc-ddns-" + this.clientId);
+					if(id !== this.ddnsHost){
+						this.vfs.setContentPublicTreePrimitive("ddnsHost", this.ddnsHost);
+						if(id){
+							ae3.web.WebInterface.localNameRemove(id, "ndmc-ddns-" + this.clientId);
+						}
+					}
+				}else{
+					if(id){
+						this.ddnsHost = null;
+						this.vfs.setContentUndefined("ddnsHost");
+						ae3.web.WebInterface.localNameRemove(id, "ndmc-ddns-" + this.clientId);
+					}
+				}
 			}
 		},
 		toString : {
@@ -334,66 +404,28 @@ function internAppendRegister(clientRequest, reason){
 			sn			: ___ECMA_IMPL_HOST_NAME___,
 			v			: 2,
 			address		: ae3.net.localAddress,
-			xns			: ['ubA', 'ut1', 'cc1']
+			xns			: Object.keys(Object.values(this.components).reduce(function(previousValue, currentValue){
+				if(currentValue){
+					for(let xns of (currentValue.requestXmlNotifications || [])){
+						previousValue[xns] = true;
+					}
+				}
+				return previousValue;
+			}, {}))
 		},
 		onSuccess	: (function(map){
 			// const address = map.address;
 			const notify = map.notify;
-			var n, id;
+			var notification, handlers, handler, id;
 			console.log("ndm.client '%s': registration result OK, got notifications: %s", this.clientId, (!!notify));
 			if(notify){
-				for(n of Array(notify)){
-					console.log("ndm.client '%s': got notification: %s", this.clientId, Format.jsObjectReadable(n));
-					id = n.id;
-					if(id === 'ubA'){
-						this.ddnsName = n.name;
-						this.ddnsZone = n.domain;
-						this.ddnsAddr = n.address;
-						id = this.ddnsHost;
-						if(this.ddnsName && this.ddnsZone){
-							this.ddnsHost = this.ddnsName + '.' + this.ddnsZone;
-							ae3.web.WebInterface.localNameUpsert(this.ddnsHost, "ndmc-ddns-" + this.clientId);
-							if(id !== this.ddnsHost){
-								this.vfs.setContentPublicTreePrimitive("ddnsHost", this.ddnsHost);
-								if(id){
-									ae3.web.WebInterface.localNameRemove(id, "ndmc-ddns-" + this.clientId);
-								}
-							}
-						}else{
-							if(id){
-								this.ddnsHost = null;
-								this.vfs.setContentUndefined("ddnsHost");
-								ae3.web.WebInterface.localNameRemove(id, "ndmc-ddns-" + this.clientId);
-							}
-						}
-					}else//
-					if(id === 'ut1'){
-						this.ndnsAlias = Format.hexAsBinary(n.alias);
-						this.ndnsSecret = Format.hexAsBinary(n.secret);
-						this.ndnsSettings = n.settings;
-						id = this.ndmpHost;
-						if(n.alias && n.settings && n.settings.domain){
-							this.ndmpZone = n.settings.domain;
-							this.ndmpHost = n.alias.substring(0, 24) + '.' + this.ndmpZone;
-							console.log("ndm.client '%s': 'ut1' notification handler, system name: %s", this.clientId, this.ndmpHost);
-						}
-						if(id !== this.ndmpHost){
-							if(this.ndmpHost){
-								this.vfs.setContentPublicTreePrimitive("ndmpHost", this.ndmpHost);
-								ae3.web.WebInterface.localNameUpsert(this.ndmpHost, "ndmc-ndmp-" + this.clientId);
-							}else{
-								this.vfs.setContentUndefined("ndmpHost");
-								ae3.web.WebInterface.localNameRemove(id, "ndmc-ddns-" + this.clientId);
-							}
-						}
-						const uClient = this.udpCloudClient;
-						if(uClient){
-							if(uClient.secret != this.ndnsSecret){
-								uClient.destroy();
-								(this.udpCloudClient = new this.UdpCloudClient(this, this.ndnsAlias.slice(0, 12), this.ndnsSecret, 0)).start();
-							}
-						}else{
-							(this.udpCloudClient = new this.UdpCloudClient(this, this.ndnsAlias.slice(0, 12), this.ndnsSecret, 0)).start();
+				for(notification of Array(notify)){
+					console.log("ndm.client '%s': got notification: %s", this.clientId, Format.jsObjectReadable(notification));
+					id = notification.id;
+					handlers = this.notificationHandlers[id];
+					if(handlers){
+						for(handler of Array(handlers)){
+							handler.onXmlNotification(id, notification);
 						}
 					}
 				}
