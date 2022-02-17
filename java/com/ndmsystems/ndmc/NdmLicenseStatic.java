@@ -49,7 +49,7 @@ public final class NdmLicenseStatic {
 	 *
 	 *            <code>
 		validateLicenseFormat = NATIVE_IMPL.validateLicenseFormat || function(licenseNumber){
-			return licenseNumber.replace(DIGITS_ONLY_REGEXP, "").length === 15;
+			return licenseNumber.replace(/\D/g, "").length === 15;
 		};
 	 * </code>
 	 * @return */
