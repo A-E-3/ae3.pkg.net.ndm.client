@@ -1,6 +1,9 @@
 Name: ae3.pkg.net.ndm.client
 Title: NDM NDSS Client 
-Requires: 
+Requires: \
+	ae3.api \
+	ae3.sdk \
+	
 Suggests: 
 Declares: 
 Provides: \

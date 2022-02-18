@@ -1,7 +1,58 @@
 package com.ndmsystems.ndmc;
 
+import ru.myx.sapi.RandomSAPI;
+
 /** @author myx */
 public final class NdmLicenseStatic {
+
+	/** <code>
+	"calcWCN8th" : {
+		value : NATIVE_IMPL.exportCalcWCN8th || function(pin7){
+			var accum = 0;
+			accum += 3 * ((pin7.charAt(0) - '0');
+			accum += 1 * ((pin7.charAt(1) - '0');
+			accum += 3 * ((pin7.charAt(2) - '0');
+			accum += 1 * ((pin7.charAt(3) - '0');
+			accum += 3 * ((pin7.charAt(4) - '0');
+			accum += 1 * ((pin7.charAt(5) - '0');
+			accum += 3 * ((pin7.charAt(6) - '0');
+			return (10 - (accum % 10)) % 10;
+		}
+	},
+	 * </code>
+	 *
+	 * @param pin7
+	 *            - string with 7 digits
+	 * @return */
+	public final static int exportCalcWCN8th(final CharSequence pin7) {
+
+		int accum = 0;
+		accum += 3 * ((pin7.charAt(0) - '0') % 10);
+		accum += 1 * ((pin7.charAt(1) - '0') % 10);
+		accum += 3 * ((pin7.charAt(2) - '0') % 10);
+		accum += 1 * ((pin7.charAt(3) - '0') % 10);
+		accum += 3 * ((pin7.charAt(4) - '0') % 10);
+		accum += 1 * ((pin7.charAt(5) - '0') % 10);
+		accum += 3 * ((pin7.charAt(6) - '0') % 10);
+		return (10 - accum % 10) % 10;
+	}
+	
+	/** <code>
+	"randomWCN" : {
+		// randomPin7 + calcWCN8th(randomPin7)
+		value : NATIVE_IMPL.exportRandWCN || function(){
+			const randomPin7 = Random.formattedString("DDDDDDD");
+			return randomPin7 + Generator.calcWCN8th(randomPin7);
+		}
+	},
+	 * </code>
+	 *
+	 * @return */
+	public final static String exportRandWCN() {
+		
+		final String randomPin7 = RandomSAPI.formattedString("DDDDDDD");
+		return randomPin7 + NdmLicenseStatic.exportCalcWCN8th(randomPin7);
+	}
 	
 	/** <code>
 	formatLicenseAsLabel3 = NATIVE_IMPL.formatLicenseAsLabel3 || function(k){
