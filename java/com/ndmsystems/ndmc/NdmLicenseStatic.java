@@ -111,11 +111,12 @@ public final class NdmLicenseStatic {
 		}
 
 		digits15 : if (text.length() == 15) {
-			for (int i = 15; i >= 0; --i) {
+			for (int i = 14; i >= 0; --i) {
 				if (!Character.isDigit(text.charAt(i))) {
 					break digits15;
 				}
 			}
+			return true;
 		}
 
 		return false;
