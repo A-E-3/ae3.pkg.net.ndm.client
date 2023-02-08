@@ -1,5 +1,6 @@
 package com.ndmsystems.ndmc;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
@@ -41,10 +42,44 @@ public class NdmUtilsStatic {
 			final BaseObject value,
 			final String errorTemplate//
 	) throws ConcurrentModificationException, IOException {
-
+		
 		int count = 0;
-
-		try (final Scanner scanner = new Scanner(binary.nextReaderUtf8());) {
+		
+		final long binaryLength = binary.length();
+		
+		if (binaryLength < 24L * 1024L) {
+			try (final Scanner scanner = binaryLength < 12L * 1024L
+				? new Scanner(binary.toStringUtf8())
+				: new Scanner(binary.nextReaderUtf8());) {
+				scanner.useDelimiter("\n");
+				
+				for (;;) {
+					final String line = scanner.next();
+					if (!scanner.hasNext()) {
+						return count;
+					}
+					final int length = line.length();
+					if (length == 0) {
+						continue;
+					}
+					if (length == keyExactLength) {
+						map.put(line, value);
+						++count;
+						continue;
+					}
+					if (length > keyExactLength && -1 != " \r\t,".indexOf(line.charAt(keyExactLength))) {
+						map.put(line.substring(0, keyExactLength), value);
+						++count;
+						continue;
+					}
+					if (line.trim().length() != 0 && null != errorTemplate) {
+						process.getConsole().error(errorTemplate, line);
+					}
+				}
+			}
+		}
+		
+		try (final Scanner scanner = new Scanner(new BufferedReader(binary.nextReaderUtf8()));) {
 			scanner.useDelimiter("\n");
 			
 			for (;;) {
