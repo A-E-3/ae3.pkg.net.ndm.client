@@ -51,13 +51,15 @@ public class NdmUtilsStatic {
 			try (final Scanner scanner = binaryLength < 12L * 1024L
 				? new Scanner(binary.toStringUtf8())
 				: new Scanner(binary.nextReaderUtf8());) {
-				scanner.useDelimiter("\n");
+				// scanner.useDelimiter("\n");
 				
 				for (;;) {
-					final String line = scanner.next();
-					if (!scanner.hasNext()) {
+					// if (!scanner.hasNext()) {
+					if (!scanner.hasNextLine()) {
 						return count;
 					}
+					// final String line = scanner.next();
+					final String line = scanner.nextLine();
 					final int length = line.length();
 					if (length == 0) {
 						continue;
@@ -80,12 +82,13 @@ public class NdmUtilsStatic {
 		}
 		
 		try (final Scanner scanner = new Scanner(new BufferedReader(binary.nextReaderUtf8()));) {
-			scanner.useDelimiter("\n");
+			// scanner.useDelimiter("\n");
 			
 			for (;;) {
 				final String line;
 				try {
-					line = scanner.next();
+					// line = scanner.next();
+					line = scanner.nextLine();
 				} catch (final NoSuchElementException e) {
 					return count;
 				}
