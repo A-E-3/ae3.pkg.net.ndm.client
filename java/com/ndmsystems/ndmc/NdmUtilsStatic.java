@@ -15,7 +15,7 @@ import ru.myx.ae3.reflect.ReflectionManual;
 /** @author myx */
 @ReflectionManual
 public class NdmUtilsStatic {
-
+	
 	/** @param process
 	 * @param binary
 	 *            - source binary with text lines
@@ -40,9 +40,9 @@ public class NdmUtilsStatic {
 			final BaseObject value,
 			final String errorTemplate//
 	) throws ConcurrentModificationException, IOException {
-
+		
 		int count = 0;
-
+		
 		try (final BufferedReader reader = new BufferedReader(binary.nextReaderUtf8())) {
 			for (;;) {
 				final String line;
@@ -71,7 +71,7 @@ public class NdmUtilsStatic {
 					++count;
 					continue;
 				}
-				if (line.trim().length() != 0 && null != errorTemplate) {
+				if (!line.isBlank() && null != errorTemplate) {
 					process.getConsole().error(errorTemplate, line);
 				}
 			}
