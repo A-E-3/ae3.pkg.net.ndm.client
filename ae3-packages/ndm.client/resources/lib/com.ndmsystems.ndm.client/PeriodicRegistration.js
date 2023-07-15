@@ -22,4 +22,3 @@ Object.defineProperties(exports, {
 		}
 	}
 });
-

@@ -513,5 +513,3 @@ const DeviceClient = ae3.Class.create(
 		return this;
 	}
 );
-
-
