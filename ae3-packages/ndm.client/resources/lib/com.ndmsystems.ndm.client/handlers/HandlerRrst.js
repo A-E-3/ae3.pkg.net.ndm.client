@@ -1,5 +1,20 @@
 const UdpCloudService = require('./../UdpCloudService');
-const RemoteServiceStateSAPI = require("java.class/ru.myx.ae3.state.RemoteServiceStateSAPI");
+
+/**
+ * 'this' to be bint to stateDomain
+ **/
+const MakeRsstReplyFn = function(rrst){
+	var queryItem, rsst = this.createReplyBuilder();
+	/** FIXME: TODO: */
+	var supported = this.allSupportedResponseCodes();
+	
+	for(queryItem of rrst){
+		console.log(">>>>>> ndm.client:UdpCloudService::iterateRRST: %s", queryItem.formatAsTextString());
+		this.
+		// rsst.add(stateDomain);
+	}
+	return rsst;
+};
 
 /**
  * 
@@ -9,15 +24,17 @@ const RemoteServiceStateSAPI = require("java.class/ru.myx.ae3.state.RemoteServic
 const HandlerRrst = module.exports = function(message, address, serial){
 	const rrst = message.rrst;
 	if(!rrst){
-		console.log(">>>>>> ndm.client:UdpCloudService::handlerRrst(%s, %s) => CERR: no rrst body", this, message);
-		this.sendSingle(new UdpCloudService.MsgCerr(serial, 0x03 /* Invalid Arguments */), address);
+		console.log(">>>>>> ndm.client:UdpCloudService::handlerRRST(%s, %s) => CERR: no rrst body", this, message);
+		this.sendSingle(new UdpCloudService.MSG_RF_CERR(serial, 0x03 /* Invalid Arguments */), address);
 		return;
 	}
 	
-	console.log(">>>>>> ndm.client:UdpCloudService::handlerRrst(%s, %s) => RSST, request", this, message);
-	this.sendSingle(new UdpCloudService.MsgCerr(serial, 0x01 /* No Such Component */), address);
-	return;
+	// console.log(">>>>>> ndm.client:UdpCloudService::handlerRRST(%s, %s) => CERR, request", this, message);
+	// this.sendSingle(new UdpCloudService.MSG_RF_CERR(serial, 0x01 /* No Such Component */), address);
+	// return;
 
-	this.sendSingle(new UdpCloudService.MsgRsst(/** FIXME: TODO: */ RSST.makeReply(message.rrst), serial), address);
-	setTimeout(result, 0);
+	const rsst = MakeRsstReplyFn.call(this.client.stateDomain, rrst);
+
+	console.log(">>>>>> ndm.client:UdpCloudService::handlerRRST(%s, %s) => RSST: %s", this, message, rsst);
+	this.sendSingle(new UdpCloudService.MSG_RF_RSST(rsst, serial), address);
 };
