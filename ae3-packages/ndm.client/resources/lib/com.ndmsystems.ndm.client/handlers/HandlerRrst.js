@@ -10,7 +10,7 @@ const MakeRsstReplyFn = function(rrst){
 	
 	for(queryItem of rrst){
 		console.log(">>>>>> ndm.client:UdpCloudService::iterateRRST: %s", queryItem.formatAsTextString());
-		this.
+		// this.
 		// rsst.add(stateDomain);
 	}
 	return rsst;
