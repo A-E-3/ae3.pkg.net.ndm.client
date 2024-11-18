@@ -134,7 +134,7 @@ Object.defineProperties(exports, {
 			stopped = true;
 			
 			if(this.udpService !== null){
-				this.udpService.destroy && this.udpService.destroy();
+				this.udpService.destroy?.();
 				Object.defineProperty(this, "udpService", {
 					writable : true,
 					value : null
