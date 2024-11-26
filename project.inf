@@ -3,11 +3,13 @@ Title: NDM NDSS Client
 Requires: \
 	ae3.api \
 	ae3.sdk \
+	ae3.sys.net \
 	
 Suggests: 
 Declares: 
 Provides: \
 	ndm.client \
+	ae3.pkg.net.ndm.client \
 	source-process:ae3-packages \
 	
 Replaces: 

@@ -1,16 +1,17 @@
 const ae3 = require('ae3');
 const Concurrent = ae3.Concurrent;
+const FN_FORMAT_BINARY_AS_HEX = Format.binaryAsHex;
 
 const UdpCloudService = ae3.Class.create(
 	"UdpCloudService",
 	ae3.net.udp.UdpService,
 	function UdpCloudService(port){
-		console.log('>>>>>> ndm.client:service: starting udp listening service on port ' + (port || 4043) + '.');
+		console.log("ndm.client::UdpCloudService:init: starting udp listening service on port %s.", (port || 4043));
 		this.UdpService(port || 4043);
 		Object.defineProperties(this, {
-			clients : {
+			"clients" : {
 				// all for quick access
-				value :  new Concurrent.HashMap()
+				value : new Concurrent.HashMap()
 			}
 		});
 		return this;
@@ -20,19 +21,35 @@ const UdpCloudService = ae3.Class.create(
 			/**
 			 * UdpCloudClient
 			 */
-			value : Concurrent.wrapSync(function(ucc){
-				console.log(">>>>>> ndm.client:service %s, registerClient: %s", this, ucc);
-				this.clients.put(ucc.key, ucc);
+			value : Concurrent.wrapSync(function(udpCloudClient){
+				this.clients.put(udpCloudClient.key, udpCloudClient);
+				console.log(
+					"ndm.client::UdpCloudService:registerClient: registered %s, %s, key: %s, valid: %s", 
+					this, 
+					udpCloudClient,
+					FN_FORMAT_BINARY_AS_HEX(udpCloudClient.key),
+					!!this.clients.get(udpCloudClient.key)
+				);
 			})
 		},
 		"removeClient" : {
-			value : Concurrent.wrapSync(function(ucc){
-				console.log(">>>>>> ndm.client:service %s, removeClient: %s", this, udpCloudClient);
-				this.clients.remove(ucc.key);
+			value : Concurrent.wrapSync(function(udpCloudClient){
+				this.clients.remove(udpCloudClient.key);
+				console.log(
+					"ndm.client::UdpCloudService:removeClient: deleted %s, %s, key: %s", 
+					this, 
+					udpCloudClient,
+					FN_FORMAT_BINARY_AS_HEX(udpCloudClient.key)
+				);
 			})
 		},
 		"resolvePeer" : {
 			value : function(key){
+				console.log(
+					"ndm.client::UdpCloudService:resolvePeer: %s, key: %s", 
+					this, 
+					FN_FORMAT_BINARY_AS_HEX(key)
+				);
 				return this.clients.get(key);
 			}
 		},
