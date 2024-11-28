@@ -269,7 +269,7 @@ exports.run = function run() {
 	
 	/* var selfName = */ args.shift();
 	
-	for ( var options = {};;) {
+	for (var options = {};;) {
 		var commandName = args.shift();
 		if (commandName.startsWith("--")) {
 			options[commandName.substr(2)] = true;
