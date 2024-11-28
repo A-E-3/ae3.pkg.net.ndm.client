@@ -32,9 +32,9 @@ const NATIVE_IMPL = (function(){
 const Client = module.exports = ae3.Class.create(
 	"Client",
 	undefined,
-	function Client(folder, ndssHost, ndssPort, license, serviceKey){
+	function Client(folder, ndssHost, license, serviceKey){
 		if(!folder.isContainer()){
-			if(!ndssHost || !ndssPort || !license || !serviceKey){
+			if(!ndssHost || !license || !serviceKey){
 				throw "folder is not a container: "+folder;
 			}
 			if(!folder.doSetContainer()){
@@ -79,7 +79,6 @@ const Client = module.exports = ae3.Class.create(
 		
 
 		this.ndssHost		= ndssHost || folder.getContentAsText("ndssHost", "");
-		this.ndssPort		= ndssPort || folder.getContentAsText("ndssPort", "");
 		this.licenseNumber	= license || folder.getContentAsText("license", "");
 		this.serviceKey		= serviceKey || folder.getContentAsText("serviceKey", "");
 		this.ndmpHost		= ""; // ddnsHost || folder.getContentAsText("ndmpHost", "");
@@ -172,9 +171,6 @@ const Client = module.exports = ae3.Class.create(
 				if(this.ndssHost != that.ndssHost){
 					return false;
 				}
-				if(this.ndssPort != that.ndssPort){
-					return false;
-				}
 				if(this.licenseNumber != that.licenseNumber){
 					return false;
 				}
@@ -186,8 +182,7 @@ const Client = module.exports = ae3.Class.create(
 		},
 		ndssUrl : {
 			get : function(){
-				const port = Number(this.ndssPort);
-				return ((port == 80 || port == 8080 || port == 17080) ? "http://" : "https://") + this.ndssHost + ':' + (port || 443);
+				return "https://" + this.ndssHost;
 			}
 		},
 		onUpdateTokenXns : {
@@ -312,14 +307,11 @@ const Client = module.exports = ae3.Class.create(
 			}
 		},
 		storeRaw : {
-			value : function(vfsClient, clientId, ndssHost, ndssPort, licenseNumber, serviceKey){
+			value : function(vfsClient, clientId, ndssHost, licenseNumber, serviceKey){
 				const txn = vfs.createTransaction();
 				try{
 					if(ndssHost !== undefined){
 						vfsClient.setContentPublicTreePrimitive("ndssHost", String(ndssHost));
-					}
-					if(ndssPort !== undefined){
-						vfsClient.setContentPublicTreePrimitive("ndssPort", Number(ndssPort));
 					}
 					if(licenseNumber !== undefined){
 						vfsClient.setContentPublicTreePrimitive("license", String(licenseNumber));
@@ -337,22 +329,19 @@ const Client = module.exports = ae3.Class.create(
 			}
 		},
 		createRobotClientRequest : {
-			value : function(ndssHost, ndssPort, robotPass){
+			value : function(ndssHost, robotPass){
 				if(!ndssHost){
 					throw new Error("ndssHost in undefined!");
-				}
-				if(!ndssPort){
-					throw new Error("ndssPort in undefined!");
 				}
 				if(!robotPass){
 					throw new Error("robotPass in undefined!");
 				}
-				return new ClientRequest(new RobotClient(ndssHost, ndssPort, robotPass));
+				return new ClientRequest(new RobotClient(ndssHost, robotPass));
 			}
 		},
 		createDeviceClientRequest : {
-			value : function(ndssHost, ndssPort, licenseNumber, serviceKey){
-				return new ClientRequest(new DeviceClient(ndssHost, ndssPort, licenseNumber, serviceKey));
+			value : function(ndssHost, licenseNumber, serviceKey){
+				return new ClientRequest(new DeviceClient(ndssHost, licenseNumber, serviceKey));
 			}
 		}
 	}
@@ -504,9 +493,8 @@ function internAppendRegister(clientRequest, reason){
 const RobotClient = ae3.Class.create(
 	"RobotClient",
 	undefined,
-	function(ndssHost, ndssPort, robotPass){
+	function(ndssHost, robotPass){
 		this.ndssHost = ndssHost;
-		this.ndssPort = ndssPort;
 		this.auth = {
 			get : {
 				__auth_type : "ndss-client"
@@ -523,18 +511,14 @@ const RobotClient = ae3.Class.create(
 const DeviceClient = ae3.Class.create(
 	"DeviceClient",
 	undefined,
-	function(ndssHost, ndssPort, licenseNumber, serviceKey){
+	function(ndssHost, licenseNumber, serviceKey){
 		if(!ndssHost){
 			throw new Error("ndssHost in undefined!");
-		}
-		if(!ndssPort){
-			throw new Error("ndssPort in undefined!");
 		}
 		if(!licenseNumber){
 			throw new Error("licenseNumber in undefined!");
 		}
 		this.ndssHost = ndssHost;
-		this.ndssPort = ndssPort;
 		this.auth = {
 			get : {
 				__auth_type : "e4",

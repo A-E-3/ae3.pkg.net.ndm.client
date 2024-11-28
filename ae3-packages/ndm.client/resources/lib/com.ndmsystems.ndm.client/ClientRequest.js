@@ -114,7 +114,7 @@ function internClientDoRequest(future, items, then){
 			}
 			const url = {
 				host : client.ndssHost,
-				port : client.ndssPort,
+				port : 443,
 				path : request.path + "?" + Format.queryStringParameters(get),
 				headers : auth.headers,
 			};
@@ -149,7 +149,7 @@ function internClientDoRequest(future, items, then){
 		
 		http.request({
 			host : client.ndssHost,
-			port : client.ndssPort,
+			port : 443,
 			method : 'POST',
 			path : path,
 			headers : headers,
