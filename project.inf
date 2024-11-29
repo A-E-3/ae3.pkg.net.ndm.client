@@ -3,7 +3,7 @@ Title: NDM NDSS Client
 Requires: \
 	ae3.api \
 	ae3.sdk \
-	ae3.sys.net \
+	ae3.network \
 	
 Suggests: 
 Declares: 
