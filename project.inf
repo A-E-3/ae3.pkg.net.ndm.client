@@ -4,6 +4,7 @@ Requires: \
 	ae3.api \
 	ae3.sdk \
 	ae3.network \
+	ae3.web \
 	
 Suggests: 
 Declares: 
