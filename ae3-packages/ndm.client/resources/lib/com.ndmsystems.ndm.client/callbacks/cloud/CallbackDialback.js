@@ -3,6 +3,12 @@ const ae3 = require('ae3');
 /**
  * https://ndss.ndmsystems.com/documentation#dialback-callback
  */
+const TcpConnect = ae3.net.tcp.connect;
+const TransferCreateBufferUtf8 = Transfer.createBufferUtf8;
+const SslWrapClient = ae3.net.ssl.wrapClient;
+const HttpReplyParser = ae3.web.HttpReplyParser;
+const SslWrapServer = ae3.net.ssl.wrapServer;
+const HttpServerParser = ae3.web.HttpServerParser;
 
 const HTTP_CONFIGURATION = {
 	factory : 'HTTP',
@@ -33,7 +39,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 		"executeCallback" : {
 			value : function(component){
 				console.log("ndm.client::CallbackDialback:executeCallback: connecting, %s", Format.jsObject(this));
-				ae3.net.tcp.connect(this.targetAddr, this.targetPort, this.connectCallback.bind(this), {
+				TcpConnect(this.targetAddr, this.targetPort, this.connectCallback.bind(this), {
 					connectTimeout : 5000,
 					reuseTimeout : 5000,
 					reuseBuffer : 32,
@@ -57,25 +63,30 @@ const CallbackDialback = module.exports = ae3.Class.create(
 				case 81:
 				case 90:
 					console.log("ndm.client::CallbackDialback:connectCallback: wrap client socket (TLS), tunnelType: %s, %s", this.tunnelType, this.socket);
-					socket = ae3.net.ssl.wrapClient(socket, null, this.targetAddr, this.targetPort, null);
+					socket = SslWrapClient(socket, null, this.targetAddr, this.targetPort, null);
 				}
 
-				var output = '', key;
-				$output(output){
-					= 'GET /'; = this.targetPath; = ' HTTP/1.1\r\n';
-					= 'Host: '; = this.targetAddress; = '\r\n';
-					= 'Connection: Upgrade\r\n';
-					= 'Upgrade: ndm-tunnel\r\n';
-					= 'Content-Length: 0\r\n';
-					= 'X-Session-Token: '; = this.sessionToken; = '\r\n';
-					= '\r\n';
-				}
+				const output = Format.sprintf(
+					"GET /%s HTTP/1.1\r\n" +
+					"Host: %s\r\n" +
+					"Connection: Upgrade\r\n" + 
+					"Upgrade: ndm-tunnel\r\n" +
+					"Content-Length: 0\r\n" +
+					"X-Session-Host: %s.%s\r\n" +
+					"X-Session-Token: %s\r\n" +
+					"\r\n",
+					this.targetPath,
+					this.targetAddress,
+					this.anchorName,
+					this.domainName,
+					this.sessionToken
+				);
 
-				const parser = new ae3.web.HttpReplyParser();
+				const parser = new HttpReplyParser();
 				parser.callback = this.replyCallback.bind(this);
 				socket.source.connectTarget(parser);
 				
-				socket.target.absorbBuffer(ae3.Transfer.createBufferUtf8(output));
+				socket.target.absorbBuffer(TransferCreateBufferUtf8(output));
 				socket.target.force();
 				this.socket = socket;
 				console.log("ndm.client::CallbackDialback:connectCallback: request sent: socket: %s, length: %s", socket, output.length + '');
@@ -97,8 +108,9 @@ const CallbackDialback = module.exports = ae3.Class.create(
 					case 43:
 					case 83:
 						console.log("ndm.client::CallbackDialback:replyCallback: wrap server socket (TLS), tunnelType: %s, %s", this.tunnelType, this.socket);
-						this.socket = ae3.net.ssl.wrapServer(//
+						this.socket = SslWrapServer(//
 							this.socket, //
+							// todo: move to execute 'once'?
 							ae3.net.ssl.getDomainStore(//
 								this.anchorName + '.' + this.domainName, //
 								CallbackDialback.PROTOCOLS, //
@@ -107,7 +119,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 						);
 					}
 
-					this.server = new ae3.web.HttpServerParser( //
+					this.server = new HttpServerParser( //
 							this.socket, //
 							this.requestCallback.bind(this), //
 							(this.tunnelType % 100) === 43 || (this.tunnelType % 100) === 83, //
@@ -152,7 +164,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 				// 'SSL_RSA_EXPORT_WITH_DES40_CBC_SHA'
 				
 				// 'TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384', // RSA key only
-				'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384'
+				'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384',
 				'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384',
 				'TLS_RSA_WITH_AES_256_CBC_SHA256',
 				// 'TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384', // RSA key only

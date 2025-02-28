@@ -1,7 +1,13 @@
 const ae3 = require('ae3');
 
 const UrlParseFn = URL.parse;
+
+const TcpConnect = ae3.net.tcp.connect;
 const TransferCreateBufferUtf8 = Transfer.createBufferUtf8;
+const SslWrapClient = ae3.net.ssl.wrapClient;
+const HttpReplyParser = ae3.web.HttpReplyParser;
+const SslWrapServer = ae3.net.ssl.wrapServer;
+const HttpServerParser = ae3.web.HttpServerParser;
 
 const SUPPORTED_PROTOCOL_SCHEMES = [
 		"ndms+http:",
@@ -84,7 +90,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 			value : function(component){
 				console.log("ndm.client::CallbackTunnelDial:executeCallback: %s, %s", this.group, this.cookie);
 				
-				ae3.net.tcp.connect(
+				TcpConnect(
 					this.targetAddr, 
 					this.targetPort, 
 					this.connectCallback.bind(this, component), 
@@ -110,7 +116,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 					case "https:":
 					case "wss:":
 					console.log("ndm.client::CallbackTunnelDial:connectCallback: wrap client socket (TLS), tunnelProtocol: %s, %s", this.tunnelProtocol, this.socket);
-					socket = ae3.net.ssl.wrapClient(socket, null, this.targetAddr, this.targetPort, null);
+					socket = SslWrapClient(socket, null, this.targetAddr, this.targetPort, null);
 				}
 				
 				const output = Format.sprintf(
@@ -128,7 +134,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 					this.sessionToken
 				);
 
-				const parser = new ae3.web.HttpReplyParser();
+				const parser = new HttpReplyParser();
 				parser.callback = this.replyCallback.bind(this);
 				socket.source.connectTarget(parser);
 				
@@ -155,7 +161,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 						case "sndns":
 
 						console.log("ndm.client::CallbackTunnelDial:replyCallback: wrap server socket (TLS), tunnelProtocol: %s, %s", this.tunnelProtocol, this.socket);
-						this.socket = ae3.net.ssl.wrapServer(//
+						this.socket = SslWrapServer(//
 							this.socket, //
 							ae3.net.ssl.getDomainStore(//
 								this.anchorName + '.' + this.domainName, //
@@ -165,7 +171,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 						);
 					}
 
-					this.server = new ae3.web.HttpServerParser( //
+					this.server = new HttpServerParser( //
 							this.socket, //
 							this.requestCallback.bind(this), //
 							(this.tunnelType % 100) === 43 || (this.tunnelType % 100) === 83, //
