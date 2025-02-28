@@ -1,6 +1,7 @@
 const ae3 = require('ae3');
 
 const UrlParseFn = URL.parse;
+const TransferCreateBufferUtf8 = Transfer.createBufferUtf8;
 
 const SUPPORTED_PROTOCOL_SCHEMES = [
 		"ndms+http:",
@@ -112,23 +113,26 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 					socket = ae3.net.ssl.wrapClient(socket, null, this.targetAddr, this.targetPort, null);
 				}
 				
-				var output = '', key;
-				$output(output){
-					= 'GET /'; = this.targetPath; = ' HTTP/1.1\r\n';
-					= 'Host: '; = this.targetAddress; = '\r\n';
-					= 'Connection: Upgrade\r\n';
-					= 'Upgrade: ndm-tunnel\r\n';
-					= 'Content-Length: 0\r\n';
-					= 'X-Session-Token: '; = this.sessionToken; = '\r\n';
-					= 'X-Session-Host: '; = component.client.ndmpHost; = '\r\n';
-					= '\r\n';
-				}
+				const output = Format.sprintf(
+					"GET /%s HTTP/1.1\r\n" +
+					"Host: %s\r\n" +
+					"Connection: Upgrade\r\n" + 
+					"Upgrade: ndm-tunnel\r\n" +
+					"Content-Length: 0\r\n" +
+					"X-Session-Host: %s\r\n" +
+					"X-Session-Token: %s\r\n" +
+					"\r\n",
+					this.targetPath,
+					this.targetAddress,
+					component.client.ndmpHost,
+					this.sessionToken
+				);
 
 				const parser = new ae3.web.HttpReplyParser();
 				parser.callback = this.replyCallback.bind(this);
 				socket.source.connectTarget(parser);
 				
-				socket.target.absorbBuffer(ae3.Transfer.createBufferUtf8(output));
+				socket.target.absorbBuffer(TransferCreateBufferUtf8(output));
 				socket.target.force();
 				this.socket = socket;
 				console.log("ndm.client::CallbackTunnelDial:connectCallback: request sent: socket: %s, length: %s", socket, output.length + '');
