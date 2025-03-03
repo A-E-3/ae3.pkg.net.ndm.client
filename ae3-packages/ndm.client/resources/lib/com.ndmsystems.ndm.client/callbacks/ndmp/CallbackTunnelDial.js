@@ -36,7 +36,7 @@ const ae3 = require("ae3");
 const UrlParseFn = URL.parse;
 
 const TcpConnect = ae3.net.tcp.connect;
-const TransferCreateBufferUtf8 = Transfer.createBufferUtf8;
+const TransferCreateBufferUtf8 = ae3.Transfer.createBufferUtf8;
 const SslWrapClient = ae3.net.ssl.wrapClient;
 const HttpReplyParser = ae3.web.HttpReplyParser;
 const SslUnwrap = ae3.net.ssl.unwrap;
@@ -64,6 +64,21 @@ const TUNNEL_PROTOCOL_SCHEMES = {
 		tlsClientUnwrap : false,
 		tlsServerWrap : false,
 	},
+};
+
+const CONNECT_CONFIGURATION = {
+	connectTimeout : 5000,
+	reuseTimeout : 5000,
+	reuseBuffer : 32,
+	optionFastRead : true,
+	optionClient : true
+};
+
+const HTTP_CONFIGURATION = {
+	factory : "HTTP",
+	ignoreTargetPort : true,
+	reverseProxied : true,
+	ifModifiedSince : "before"
 };
 
 const CallbackTunnelDial = module.exports = ae3.Class.create(
@@ -128,7 +143,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 					return false;
 				}
 				
-				const override = component.client.override;
+				const override = component.client.overrideSettings;
 				
 				if(override.forcePlainHandshake && !protocol.tlsClientRequired){
 					this.doClientWrap = false;
@@ -157,18 +172,11 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 		"executeCallback" : {
 			value : function(component){
 				console.log("ndm.client::CallbackTunnelDial:executeCallback: %s, %s", this.group, this.cookie);
-				
 				TcpConnect(
 					this.targetAddr, 
 					this.targetPort, 
-					this.connectCallback.bind(this, component), 
-					{
-						connectTimeout : 5000,
-						reuseTimeout : 5000,
-						reuseBuffer : 32,
-						optionFastRead : true,
-						optionClient : true
-					}
+					this.connectCallback.bind(this, component),
+					CONNECT_CONFIGURATION
 				);
 			}
 		},
@@ -178,6 +186,7 @@ const CallbackTunnelDial = module.exports = ae3.Class.create(
 					console.log("ndm.client::CallbackTunnelDial:connectCallback: tcp connect failed: %s:%s", this.targetAddr, this.targetPort);
 					return;
 				}
+				
 				console.log("ndm.client::CallbackTunnelDial:connectCallback: tcp connected, %s:%s %s", this.targetAddr, this.targetPort, this.tunnelType);
 
 				if(this.doClientWrap){

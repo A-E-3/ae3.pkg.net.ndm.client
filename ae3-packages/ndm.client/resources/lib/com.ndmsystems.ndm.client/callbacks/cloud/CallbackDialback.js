@@ -4,13 +4,39 @@ const ae3 = require("ae3");
  * https://ndss.ndmsystems.com/documentation#dialback-callback
  */
 const TcpConnect = ae3.net.tcp.connect;
-const TransferCreateBufferUtf8 = Transfer.createBufferUtf8;
+const TransferCreateBufferUtf8 = ae3.Transfer.createBufferUtf8;
 const SslWrapClient = ae3.net.ssl.wrapClient;
 const FormatSprintf = Format.sprintf;
 const HttpReplyParser = ae3.web.HttpReplyParser;
 const SslUnwrap = ae3.net.ssl.unwrap;
 const SslWrapServer = ae3.net.ssl.wrapServer;
 const HttpServerParser = ae3.web.HttpServerParser;
+
+const TUNNEL_BY_SERVER_PORT = {}; {
+	/** tunnel is raw, tunnel data is tls **/
+	[443,5083,5443,8083,8443,65083]
+		.reduce(function(r,x){ 
+			r[x] = "raw"; 
+			return r; 
+		},TUNNEL_BY_SERVER_PORT)
+	;
+
+	/** tunnel is tls, tunnel data is raw **/
+	[0,80,81,280,591,777,5080,8080,8090,65080]
+		.reduce(function(r,x){ 
+			r[x] = "tls"; 
+			return r; 
+		},TUNNEL_BY_SERVER_PORT)
+	;
+}
+
+const CONNECT_CONFIGURATION = {
+	connectTimeout : 5000,
+	reuseTimeout : 5000,
+	reuseBuffer : 32,
+	optionFastRead : true,
+	optionClient : true
+};
 
 const HTTP_CONFIGURATION = {
 	factory : "HTTP",
@@ -19,17 +45,8 @@ const HTTP_CONFIGURATION = {
 	ifModifiedSince : "before"
 };
 
-const TUNNEL_BY_SERVER_PORT = {};
 
-/** tunnel is raw, tunnel data is tls **/
-[443,5083,5443,8083,8443,65083]
-	.reduce(function(r,x){ r[x] = "raw"; return r; },TUNNEL_BY_SERVER_PORT)
-;
 
-/** tunnel is tls, tunnel data is raw **/
-[0,80,81,280,591,777,5080,8080,8090,65080]
-	.reduce(function(r,x){ r[x] = "tls"; return r; },TUNNEL_BY_SERVER_PORT)
-;
 
 const CallbackDialback = module.exports = ae3.Class.create(
 	"CallbackDialback",
@@ -53,7 +70,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 	{
 		"prepareCallback" : {
 			value : function(component){
-				const override = component.client.override;
+				const override = component.client.overrideSettings;
 				switch(TUNNEL_BY_SERVER_PORT[this.tunnelType]){
 				case "raw":
 					if(override.forcePlainHandshake || (!this.handshakeData && override.allowPlainHandshake)){
@@ -62,7 +79,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 						this.doServerWrap = true;
 						return true;
 					}
-					if(!this.handshakeData){
+					if(!this.handshakeData && override.forceCertificateValidation){
 						console.log(
 							"ndm.client::CallbackDialback:prepareCallback: refused: no handshakeData, target: %s:%s", 
 							this.targetAddr,
@@ -75,7 +92,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 					this.doServerWrap = true;
 					return true;
 				case "tls":
-					if(!this.handshakeData){
+					if(!this.handshakeData && override.forceCertificateValidation){
 						console.log(
 							"ndm.client::CallbackDialback:prepareCallback: refused: no handshakeData, target: %s:%s", 
 							this.targetAddr,
@@ -100,13 +117,12 @@ const CallbackDialback = module.exports = ae3.Class.create(
 		"executeCallback" : {
 			value : function(component){
 				console.log("ndm.client::CallbackDialback:executeCallback: connecting, %s", Format.jsObject(this));
-				TcpConnect(this.targetAddr, this.targetPort, this.connectCallback.bind(this), {
-					connectTimeout : 5000,
-					reuseTimeout : 5000,
-					reuseBuffer : 32,
-					optionFastRead : true,
-					optionClient : true
-				});
+				TcpConnect(
+					this.targetAddr, 
+					this.targetPort, 
+					this.connectCallback.bind(this), 
+					CONNECT_CONFIGURATION
+				);
 			}
 		},
 		"connectCallback" : {
@@ -115,6 +131,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 					console.log("ndm.client::CallbackDialback:connectCallback: tcp connect failed: %s:%s", this.targetAddr, this.targetPort);
 					return;
 				}
+				
 				console.log("ndm.client::CallbackDialback:connectCallback: tcp connected, %s:%s %s", this.targetAddr, this.targetPort, this.tunnelType);
 
 				if(this.doClientWrap){
