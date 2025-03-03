@@ -32,7 +32,7 @@ const NATIVE_IMPL = (function(){
 const Client = module.exports = ae3.Class.create(
 	"Client",
 	undefined,
-	function Client(folder, ndssHost, license, serviceKey){
+	function Client(folder, ndssHost, license, serviceKey, overrideSettings){
 		if(!folder.isContainer()){
 			if(!ndssHost || !license || !serviceKey){
 				throw "folder is not a container: "+folder;
@@ -52,6 +52,9 @@ const Client = module.exports = ae3.Class.create(
 			},
 			stateDomain : {
 				value : MakeRsstDomainFn(null)
+			},
+			override : {
+				value : overrideSettings || {}
 			},
 			components : {
 				value : {
