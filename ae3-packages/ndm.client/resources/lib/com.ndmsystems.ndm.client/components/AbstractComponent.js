@@ -63,7 +63,7 @@ const AbstractComponent = module.exports = ae3.Class.create(
 				
 				const callback = new callbackClass(args);
 				if(!callback){
-					/** ^^^ callback constructor failes to construct an object, CERR 0x03 - invalid arguments */
+					/** ^^^ callback constructor fails to construct an object, CERR 0x03 - invalid arguments */
 					console.log("ndm.client::AbstractComponent:prepareCall: %s: invalid arguments: %s", this.componentName, args);
 					return 0x03;
 				}
