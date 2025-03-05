@@ -182,29 +182,35 @@ const CallbackDialback = module.exports = ae3.Class.create(
 				}
 				switch(reply.code){
 				case 101:
-					console.log("ndm.client::CallbackDialback:replyCallback: switch protocol, reply: %s, %s", Format.jsDescribe(reply), this.socket);
 
-					if(this.doClientUnwrap){
-						console.log("ndm.client::CallbackDialback:replyCallback: unwrap client socket (TLS), tunnelType: %s, %s", this.tunnelType, this.socket);
-						this.socket = SslUnwrap(this.socket);
+					if(this.doCloudWrap && reply.attributes["X-Server-Tls"]){
+						
+						console.log("ndm.client::CallbackDialback:replyCallback: switch protocol, use cloud wrap, reply: %s, %s", Format.jsDescribe(reply), this.socket);
+						
+					}else{
+						
+						console.log("ndm.client::CallbackDialback:replyCallback: switch protocol, reply: %s, %s", Format.jsDescribe(reply), this.socket);
+						
+						if(this.doClientUnwrap){
+							console.log("ndm.client::CallbackDialback:replyCallback: unwrap client socket (TLS), tunnelType: %s, %s", this.tunnelType, this.socket);
+							this.socket = SslUnwrap(this.socket);
+						}
+						
+						if(this.doServerWrap){
+							console.log("ndm.client::CallbackDialback:replyCallback: wrap server socket (TLS), tunnelType: %s, %s", this.tunnelType, this.socket);
+							this.socket = SslWrapServer(//
+								this.socket, //
+								// todo: move to execute "once"?
+								ae3.net.ssl.getDomainStore(//
+									this.anchorName + "." + this.domainName, //
+									CallbackDialback.PROTOCOLS, //
+									CallbackDialback.CIPHERS//
+								)//
+							);
+						}
+						
 					}
 					
-					if(this.doCloudWrap && reply.attributes["X-Server-Tls"]){
-						//
-					}else
-					if(this.doServerWrap){
-						console.log("ndm.client::CallbackDialback:replyCallback: wrap server socket (TLS), tunnelType: %s, %s", this.tunnelType, this.socket);
-						this.socket = SslWrapServer(//
-							this.socket, //
-							// todo: move to execute "once"?
-							ae3.net.ssl.getDomainStore(//
-								this.anchorName + "." + this.domainName, //
-								CallbackDialback.PROTOCOLS, //
-								CallbackDialback.CIPHERS//
-							)//
-						);
-					}
-
 					this.server = new HttpServerParser( //
 							this.socket, //
 							this.requestCallback.bind(this), //
