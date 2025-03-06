@@ -157,7 +157,7 @@ const CallbackDialback = module.exports = ae3.Class.create(
 					this.anchorName,
 					this.domainName,
 					this.sessionToken,
-					doCloudWrap ? "X-Server-Tls: true\r\n" : ""
+					this.doCloudWrap ? "X-Server-Tls: true\r\n" : ""
 				);
 
 				const parser = new HttpReplyParser();
