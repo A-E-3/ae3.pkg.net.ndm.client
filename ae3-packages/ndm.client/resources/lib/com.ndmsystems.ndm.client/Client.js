@@ -9,7 +9,7 @@
 
 
 const http = require("http");
-const ae3 = require('ae3');
+const ae3 = require("ae3");
 const vfs = ae3.vfs;
 
 const MakeRsstDomainFn = require("java.class/ru.myx.ae3.state.RemoteServiceStateSAPI").makeRemoteServiceStateDomain;
