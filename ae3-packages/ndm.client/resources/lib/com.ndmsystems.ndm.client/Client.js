@@ -290,7 +290,7 @@ function internCheckStats(clientRequest){
 	const Stats = require('ae3.stats/Stats');
 	var start = Stats.validateOrCreateStartKey(this.vfs.getContentPrimitive("lastExported"), false);
 	var stats = Stats.listRuntimeSystemStats(start, 1000 + 1, false);
-	if(!stats || !stats.length){
+	if(!stats?.length){
 		return false;
 	}
 	var next = stats && stats.length > limit && stats[stats.length-1].id;
