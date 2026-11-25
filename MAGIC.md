@@ -85,3 +85,19 @@ older build, a different share, or a console log.
 The two hosts on this package are `ndmc.local` and `ndmp.local`. Both name modules the tree does not
 hold, so neither reaches this line today. The byte-identical copies are the `eclipse-ae3` project tree
 and `/Users/myx/Workspaces/ws-myx.ae3-devel/source/ae3/ae3.pkg.net.ndm.client`.
+
+## How many of the shipped host references resolve, and which one does not
+
+The shipped host descriptors carry exactly one reference that resolves nowhere, and it is `NdmpWebShare`.
+
+`/Volumes/workspace/myx/acm-cvs/sys-current/settings/web/hosts/` holds 21 descriptors. Ten name a module string, nine are aliases, and two name a skin.
+
+The ten strings give nine distinct module names. Eight resolve inside the axiom: `AcmWebService`, `Ae3WebService`, `CountryNameWebService`, `GeoWebService`, `HeadersWebService`, `HelloWorldWebShare`, `IpWebService` and `NdmcWebShare`. Each is one file.
+
+`NdmpWebShare` is the ninth and is 0 files. Every alias target resolves to a descriptor in the same folder, and both skin names resolve to a skin folder under `resources/skin/`.
+
+`acm-cvs/sys-release` ships the same 21 descriptors, `ndmp.local.json` at the same md5 `25271836bc289ef264f7631e1fe0d4d4`.
+
+So this is one broken host, not a class. `NdmcWebShare` is the control that the sweep can find a module the tree does hold.
+
+No checkout on this machine holds a deployed host's `settings/web/hosts/`, so whether a running host is affected stays unchecked here.
